@@ -1,1 +1,15 @@
+Open the extracted Folder in vsCode
+Open powershell
 
+Make the exe files in the build folder:
+g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/encryption.exe -std=c++11
+g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/decryption.exe -std=c++11
+
+Run the exe files:
+Open two different new terminals and run two exe files in two different terminals:
+
+.\build\encryption.exe
+.\build\decryption.exe
+
+
+ENJOY
