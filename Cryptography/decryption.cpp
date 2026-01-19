@@ -17,7 +17,7 @@ const vector<vector<int>> KEY_MATRIX = {
 string decryptMessage(const string& encryptedMessage) {
     int blockSize = KEY_MATRIX.size();
     
-    // Calculate inverse matrix (precompute for efficiency)
+    // Calculate inverse matrix
     static vector<vector<int>> inverseKey = MatrixUtils::inverseMatrix(KEY_MATRIX);
     
     // Convert encrypted message to numerical vector
