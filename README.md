@@ -225,14 +225,14 @@ HOW TO RUN AFTER DOWNLOADING:
 Open the extracted folder in vsCode;
 
 Make the exe Files inside build folder:
-# Method A: Compile both at once
-g++ build/Cryptography/encryption.cpp build/Cryptography/matrix_utils.cpp -o build/encryption.exe -std=c++11
-g++ build/Cryptography/decryption.cpp build/Cryptography/matrix_utils.cpp -o build/decryption.exe -std=c++11
+g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/encryption.exe -std=c++11
+g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/decryption.exe -std=c++11 
 
-Run:
-# Method B: Compile with optimizations
-g++ encryption.cpp matrix_utils.cpp -o encryption.exe -std=c++11 -O2
-g++ decryption.cpp matrix_utils.cpp -o decryption.exe -std=c++11 -O2
+RUN:
+(open 2 new terminals, run one at each)
+.\build\encryption.exe
+.\build\decryption.exe
+
 
 ENJOY
 
