@@ -25,14 +25,13 @@ public:
     static std::vector<std::vector<int>> inverseMatrix(const std::vector<std::vector<int>>& matrix);
     
     // Convert string to vector of integers (A=0, B=1, ..., Z=25)
-    // preserveSpaces: if true, spaces are encoded as 26
-    static std::vector<int> stringToVector(const std::string& str, bool preserveSpaces = false);
+    static std::vector<int> stringToVector(const std::string& str);
     
     // Convert vector of integers to string
     static std::string vectorToString(const std::vector<int>& vec);
     
     // Pad string to make length multiple of matrix size
-    static std::string padString(const std::string& str, int blockSize, bool preserveSpaces = false);
+    static std::string padString(const std::string& str, int blockSize);
     
     // Remove padding characters
     static std::string removePadding(const std::string& str);
