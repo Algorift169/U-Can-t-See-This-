@@ -217,3 +217,23 @@ Algorithm design principles transfer to any computational problem
 Understanding weaknesses in old systems helps build stronger new ones
 
 This project isn't just about encrypting messages—it's about understanding the bridge between abstract mathematics and practical computer science.
+
+
+
+HOW TO RUN AFTER DOWNLOADING:
+
+Open the extracted folder in vsCode;
+
+Make the exe Files inside build folder:
+# Method A: Compile both at once
+g++ build/Cryptography/encryption.cpp build/Cryptography/matrix_utils.cpp -o build/encryption.exe -std=c++11
+g++ build/Cryptography/decryption.cpp build/Cryptography/matrix_utils.cpp -o build/decryption.exe -std=c++11
+
+Run:
+# Method B: Compile with optimizations
+g++ encryption.cpp matrix_utils.cpp -o encryption.exe -std=c++11 -O2
+g++ decryption.cpp matrix_utils.cpp -o decryption.exe -std=c++11 -O2
+
+ENJOY
+
+
