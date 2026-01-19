@@ -123,19 +123,13 @@ vector<int> MatrixUtils::multiplyMatrixVector(const vector<vector<int>>& matrix,
 }
 
 // String to vector conversion (A=0, B=1, ..., Z=25)
-// Now includes space as a special character (value 26, not encrypted)
-vector<int> MatrixUtils::stringToVector(const string& str, bool preserveSpaces) {
+vector<int> MatrixUtils::stringToVector(const string& str) {
     vector<int> vec;
     vec.reserve(str.length());
     
     for (char c : str) {
-        if (c == ' ' && preserveSpaces) {
-            vec.push_back(26);  // Special code for space
-        } else if (isalpha(c)) {
+        if (isalpha(c)) {
             vec.push_back(toupper(c) - 'A');
-        } else if (preserveSpaces) {
-            // Ignore other non-alphabetic characters
-            continue;
         } else {
             throw runtime_error("Invalid character in message. Only letters A-Z allowed.");
         }
@@ -143,38 +137,33 @@ vector<int> MatrixUtils::stringToVector(const string& str, bool preserveSpaces) 
     return vec;
 }
 
-// Vector to string conversion (handles spaces)
+// Vector to string conversion
 string MatrixUtils::vectorToString(const vector<int>& vec) {
     string str;
     str.reserve(vec.size());
     
     for (int num : vec) {
-        if (num == 26) {
-            str.push_back(' ');  // Space character
-        } else {
-            str.push_back(static_cast<char>('A' + ((num % 26 + 26) % 26)));
-        }
+        str.push_back(static_cast<char>('A' + ((num % 26 + 26) % 26)));
     }
     return str;
 }
 
 // Pad string with 'X' to make length multiple of blockSize
-// Now preserves spaces
-string MatrixUtils::padString(const string& str, int blockSize, bool preserveSpaces) {
-    string cleanStr;
+string MatrixUtils::padString(const string& str, int blockSize) {
+    string padded = str;
     
-    for (char c : str) {
-        if (preserveSpaces && c == ' ') {
-            cleanStr.push_back(' ');
-        } else if (isalpha(c)) {
-            cleanStr.push_back(toupper(c));
-        } else if (preserveSpaces) {
-            // Skip other characters
-            continue;
+    // Convert to uppercase
+    transform(padded.begin(), padded.end(), padded.begin(), ::toupper);
+    
+    // Remove non-alphabetic characters
+    string cleanStr;
+    for (char c : padded) {
+        if (isalpha(c)) {
+            cleanStr.push_back(c);
         }
     }
     
-    // Add padding if needed (use 'X' for padding)
+    // Add padding if needed
     int remainder = cleanStr.length() % blockSize;
     if (remainder != 0) {
         int paddingNeeded = blockSize - remainder;
@@ -188,7 +177,7 @@ string MatrixUtils::padString(const string& str, int blockSize, bool preserveSpa
 string MatrixUtils::removePadding(const string& str) {
     string result = str;
     
-    // Remove trailing 'X' characters (but not spaces)
+    // Remove trailing 'X' characters
     while (!result.empty() && result.back() == 'X') {
         result.pop_back();
     }
