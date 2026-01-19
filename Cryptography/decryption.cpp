@@ -20,8 +20,8 @@ string decryptMessage(const string& encryptedMessage) {
     // Calculate inverse matrix (precompute for efficiency)
     static vector<vector<int>> inverseKey = MatrixUtils::inverseMatrix(KEY_MATRIX);
     
-    // Convert encrypted message to numerical vector (preserve spaces)
-    vector<int> encryptedVector = MatrixUtils::stringToVector(encryptedMessage, true);
+    // Convert encrypted message to numerical vector
+    vector<int> encryptedVector = MatrixUtils::stringToVector(encryptedMessage);
     
     // Decrypt block by block
     vector<int> decryptedVector;
@@ -34,26 +34,12 @@ string decryptMessage(const string& encryptedMessage) {
             block.push_back(encryptedVector[i + j]);
         }
         
-        // Check if block contains spaces
-        bool hasSpace = false;
-        for (int num : block) {
-            if (num == 26) {
-                hasSpace = true;
-                break;
-            }
-        }
+        // Decrypt the block using inverse matrix
+        vector<int> decryptedBlock = MatrixUtils::multiplyMatrixVector(inverseKey, block, 26);
         
-        if (hasSpace) {
-            // If block contains spaces, don't decrypt (copy as-is)
-            decryptedVector.insert(decryptedVector.end(), block.begin(), block.end());
-        } else {
-            // Decrypt the block using inverse matrix
-            vector<int> decryptedBlock = MatrixUtils::multiplyMatrixVector(inverseKey, block, 26);
-            
-            // Add to result
-            decryptedVector.insert(decryptedVector.end(), 
-                                  decryptedBlock.begin(), decryptedBlock.end());
-        }
+        // Add to result
+        decryptedVector.insert(decryptedVector.end(), 
+                              decryptedBlock.begin(), decryptedBlock.end());
     }
     
     // Convert back to string and remove padding
@@ -64,7 +50,6 @@ string decryptMessage(const string& encryptedMessage) {
 int main() {
     cout << "=== Hill Cipher Decryption ===" << endl;
     cout << "Matrix Size: " << KEY_MATRIX.size() << "x" << KEY_MATRIX[0].size() << endl;
-    cout << "Note: Spaces are preserved in the output" << endl;
     
     // Get input from user
     string inputMethod;
