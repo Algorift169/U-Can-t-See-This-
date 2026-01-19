@@ -1,15 +1,24 @@
-Open the extracted Folder in vsCode
-Open powershell
+How to Run
+Code Compilation:
+Open the extracted folder in VS Code.
 
-Make the exe files in the build folder:
-g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/encryption.exe -std=c++11
-g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/decryption.exe -std=c++11
+Open PowerShell in the project directory.
 
-Run the exe files:
-Open two different new terminals and run two exe files in two different terminals:
+Compile the executable files in the build folder:
 
+powershell
+g++ Cryptography/encryption.cpp Cryptography/MatrixUtils.cpp -o build/encryption.exe -std=c++11
+g++ Cryptography/decryption.cpp Cryptography/MatrixUtils.cpp -o build/decryption.exe -std=c++11
+Running the Program:
+Open two separate terminals in VS Code.
+
+In the first terminal, run:
+
+powershell
 .\build\encryption.exe
+In the second terminal, run:
+
+powershell
 .\build\decryption.exe
+The two programs should now be running and communicating (likely via IPC, sockets, or shared memory).
 
-
-ENJOY
