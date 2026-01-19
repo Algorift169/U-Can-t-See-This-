@@ -7,8 +7,12 @@ Open PowerShell in the project directory.
 Compile the executable files in the build folder:
 
 powershell
-g++ Cryptography/encryption.cpp Cryptography/MatrixUtils.cpp -o build/encryption.exe -std=c++11
-g++ Cryptography/decryption.cpp Cryptography/MatrixUtils.cpp -o build/decryption.exe -std=c++11
+# For encryption
+g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/encryption.exe -std=c++11
+
+# For decryption
+g++ Cryptography/decryption.cpp Cryptography/matrix_utils.cpp -o build/decryption.exe -std=c++11
+
 Running the Program:
 Open two separate terminals in VS Code.
 
