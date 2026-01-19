@@ -3,200 +3,193 @@
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include <cctype>
+#include <algorithm>
+#include <vector>
+#include <limits>
 
 using namespace std;
 using namespace chrono;
 
-// Predefined key matrix (3x3 example - must be invertible mod 26)
 const vector<vector<int>> KEY_MATRIX = {
     {6, 24, 1},
     {13, 16, 10},
     {20, 17, 15}
 };
 
-// Function to print decorative header
-void printHeader(const string& title) {
-    cout << "\n";
-    cout << "╔══════════════════════════════════════════════════════════════╗\n";
-    cout << "║                                                              ║\n";
-    cout << "║                " << setw(40) << left << title << "                ║\n";
-    cout << "║                                                              ║\n";
-    cout << "╚══════════════════════════════════════════════════════════════╝\n";
+/* ---------- UI ---------- */
+void clearScreen() {
+    for (int i = 0; i < 50; i++) cout << "\n";
 }
 
-// Function to print section separator
-void printSeparator() {
-    cout << "\n┌──────────────────────────────────────────────────────────────┐\n";
+void banner() {
+    cout << "\n+==============================================================+\n";
+    cout << "|              H I L L   C I P H E R  (ENCRYPT)                |\n";
+    cout << "+==============================================================+\n";
 }
 
-// Function to print boxed text
-void printBox(const string& label, const string& content) {
-    cout << "│ " << setw(15) << left << label << ": " << setw(47) << left << content << "│\n";
+void menu() {
+    cout << "\n[1] Type message\n";
+    cout << "[2] Read from file (message.txt)\n";
+    cout << "[3] Exit\n";
+    cout << "\nChoice > ";
 }
 
-// Function to print footer
-void printFooter() {
-    cout << "\n└──────────────────────────────────────────────────────────────┘\n";
+void box(const string& k, const string& v) {
+    cout << "| " << setw(12) << left << k << ": "
+         << setw(45) << left << v << "|\n";
 }
 
-// Encrypt message using Hill cipher with space preservation
-string encryptMessage(const string& message) {
-    int blockSize = KEY_MATRIX.size();
+/* ---------- CORE ---------- */
+// Returns: encrypted text, and space positions for reconstruction
+pair<string, vector<int>> encryptWithSpaces(const string& msg) {
+    int n = KEY_MATRIX.size();
     
-    // Pad and clean the message (preserve spaces)
-    string paddedMessage = MatrixUtils::padString(message, blockSize, true);
+    // Store original space positions
+    vector<int> space_positions;
+    for (size_t i = 0; i < msg.length(); i++) {
+        if (msg[i] == ' ') {
+            space_positions.push_back(i);
+        }
+    }
     
-    // Encrypt block by block
-    string encrypted;
-    int alphaCount = 0;
-    int totalAlpha = MatrixUtils::countAlpha(paddedMessage);
+    // Remove spaces for Hill cipher
+    string letters_only;
+    for (char c : msg) {
+        if (isalpha(c)) {
+            letters_only += toupper(c);
+        }
+    }
+
+    // Pad if needed
+    while (letters_only.size() % n != 0)
+        letters_only += 'X';
+
+    // Encrypt blocks
+    string encrypted_letters;
+    for (size_t i = 0; i < letters_only.size(); i += n) {
+        vector<int> block;
+        for (int j = 0; j < n; j++) {
+            block.push_back(letters_only[i + j] - 'A');
+        }
+
+        vector<int> res = MatrixUtils::multiplyMatrixVector(KEY_MATRIX, block, 26);
+
+        for (int x : res) {
+            encrypted_letters += char('A' + (x % 26));
+        }
+    }
     
-    for (size_t i = 0; alphaCount < totalAlpha; i++) {
-        if (i < paddedMessage.length()) {
-            if (paddedMessage[i] == ' ') {
-                // Preserve spaces in output
-                encrypted += ' ';
-            } else {
-                // Extract block of alphabetic characters
-                vector<int> block;
-                int charsTaken = 0;
-                
-                // Find next block of letters
-                for (size_t j = i; j < paddedMessage.length() && charsTaken < blockSize; j++) {
-                    if (isalpha(paddedMessage[j])) {
-                        block.push_back(toupper(paddedMessage[j]) - 'A');
-                        charsTaken++;
-                        alphaCount++;
-                    }
-                }
-                i += charsTaken - 1;
-                
-                // Pad if necessary
-                while (block.size() < blockSize) {
-                    block.push_back('X' - 'A');
-                }
-                
-                // Encrypt the block
-                vector<int> encryptedBlock = MatrixUtils::multiplyMatrixVector(KEY_MATRIX, block, 26);
-                
-                // Add to result
-                for (int num : encryptedBlock) {
-                    encrypted += static_cast<char>('A' + ((num % 26 + 26) % 26));
-                }
+    return {encrypted_letters, space_positions};
+}
+
+/* ---------- MAIN ---------- */
+int main() {
+    while (true) {
+        clearScreen();
+        banner();
+        menu();
+
+        string choice;
+        getline(cin, choice);
+
+        if (choice == "3") {
+            cout << "\nExiting... Goodbye 👋\n";
+            break;
+        }
+
+        string message;
+        
+        if (choice == "1") {
+            cout << "\nEnter message > ";
+            if (!getline(cin, message)) {
+                cout << "\nInput error. Returning to menu.\n";
+                cout << "Press ENTER to continue...";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            
+            if (message.empty()) {
+                cout << "\n⚠ Message cannot be empty\n";
+                cout << "Press ENTER to continue...";
+                string dummy;
+                getline(cin, dummy);
+                continue;
             }
         }
-    }
-    
-    return encrypted;
-}
+        else if (choice == "2") {
+            ifstream in("message.txt");
+            if (!in) {
+                cout << "\n❌ Cannot open message.txt. Create it first.\n";
+                cout << "Press ENTER to continue...";
+                string dummy;
+                getline(cin, dummy);
+                continue;
+            }
+            getline(in, message);
+            in.close();
+            cout << "\n✓ Loaded from message.txt\n";
+        }
+        else {
+            cout << "\n⚠ Invalid choice\n";
+            cout << "Press ENTER to continue...";
+            string dummy;
+            getline(cin, dummy);
+            continue;
+        }
 
-int main() {
-    // Enhanced UI with design
-    printHeader("HILL CIPHER ENCRYPTION");
-    
-    cout << "\n";
-    cout << "┌──────────────────────────────────────────────────────────────┐\n";
-    cout << "│                     CONFIGURATION                            │\n";
-    cout << "├──────────────────────────────────────────────────────────────┤\n";
-    cout << "│  Matrix Size: " << setw(48) << left << "3x3" << "│\n";
-    cout << "│  Space Preservation: " << setw(40) << left << "Enabled" << "│\n";
-    cout << "└──────────────────────────────────────────────────────────────┘\n";
-    
-    // Get input from user
-    string inputMethod;
-    cout << "\n\n";
-    cout << "╭──────────────────────────────────────────────────────────────╮\n";
-    cout << "│                     INPUT METHOD                             │\n";
-    cout << "├──────────────────────────────────────────────────────────────┤\n";
-    cout << "│  1. Type message manually                                    │\n";
-    cout << "│  2. Read from file                                           │\n";
-    cout << "╰──────────────────────────────────────────────────────────────╯\n";
-    cout << "\nEnter your choice (1 or 2): ";
-    getline(cin, inputMethod);
-    
-    string message;
-    
-    if (inputMethod == "1") {
-        cout << "\n";
-        cout << "╭──────────────────────────────────────────────────────────────╮\n";
-        cout << "│                     ENTER MESSAGE                            │\n";
-        cout << "╰──────────────────────────────────────────────────────────────╯\n";
-        cout << "> ";
-        getline(cin, message);
-        cout << "\n✓ Message received: " << message << endl;
-    } else if (inputMethod == "2") {
-        string filename;
-        cout << "\n";
-        cout << "╭──────────────────────────────────────────────────────────────╮\n";
-        cout << "│                     FILE SELECTION                           │\n";
-        cout << "╰──────────────────────────────────────────────────────────────╯\n";
-        cout << "Enter filename (press Enter for 'message.txt'): ";
-        getline(cin, filename);
-        
-        if (filename.empty()) {
-            filename = "message.txt";
+        try {
+            auto start_time = high_resolution_clock::now();
+            auto result = encryptWithSpaces(message);
+            string encrypted = result.first;
+            vector<int> space_positions = result.second;
+            auto end_time = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(end_time - start_time);
+
+            // Display results
+            clearScreen();
+            cout << "\n+==============================================================+\n";
+            cout << "|                         R E S U L T S                        |\n";
+            cout << "+==============================================================+\n";
+            box("Original", message);
+            box("Encrypted", encrypted);
+            box("Time", to_string(duration.count()) + " microseconds");
+            cout << "+==============================================================+\n";
+
+            // Save encrypted text
+            ofstream out("encrypted.txt");
+            if (out) {
+                out << encrypted;
+                out.close();
+                cout << "\n✓ Encrypted text saved to encrypted.txt\n";
+            }
+            
+            // Save space map
+            ofstream space_out("space_map.txt");
+            if (space_out) {
+                // Format: original_length encrypted_length space_count pos1 pos2 pos3...
+                space_out << message.length() << " " 
+                         << encrypted.length() << " " 
+                         << space_positions.size();
+                for (int pos : space_positions) {
+                    space_out << " " << pos;
+                }
+                space_out.close();
+                cout << "✓ Space map saved to space_map.txt\n";
+            }
+            
+        } catch (const exception& e) {
+            cout << "\n❌ Error: " << e.what() << "\n";
+            cout << "Press ENTER to continue...";
+            string dummy;
+            getline(cin, dummy);
+            continue;
         }
-        
-        ifstream inputFile(filename);
-        if (!inputFile) {
-            cerr << "\n❌ Error: Cannot open file " << filename << endl;
-            return 1;
-        }
-        getline(inputFile, message);
-        inputFile.close();
-        cout << "✓ Message loaded from file: " << message << endl;
-    } else {
-        cerr << "\n❌ Invalid choice!" << endl;
-        return 1;
+
+        cout << "\nPress ENTER to return to menu...";
+        string dummy;
+        getline(cin, dummy);
     }
-    
-    // Start timer
-    auto startTime = high_resolution_clock::now();
-    
-    try {
-        // Encrypt the message
-        string encrypted = encryptMessage(message);
-        
-        // Stop timer
-        auto endTime = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds>(endTime - startTime);
-        
-        // Display results with enhanced design
-        printHeader("ENCRYPTION RESULTS");
-        
-        printSeparator();
-        printBox("Original Message", message);
-        printBox("Encrypted Text", encrypted);
-        printBox("Processing Time", to_string(duration.count()) + " microseconds");
-        
-        // Key matrix display
-        cout << "│\n";
-        cout << "│ Key Matrix (3x3):                                          │\n";
-        cout << "│   [ 6, 24,  1]                                             │\n";
-        cout << "│   [13, 16, 10]                                             │\n";
-        cout << "│   [20, 17, 15]                                             │\n";
-        
-        printFooter();
-        
-        // Save to file
-        ofstream outputFile("encrypted.txt");
-        if (outputFile) {
-            outputFile << encrypted;
-            outputFile.close();
-            cout << "\n✅ Encrypted message saved to 'encrypted.txt'\n";
-        } else {
-            cerr << "\n⚠️  Warning: Could not save to file\n";
-        }
-        
-        cout << "\n";
-        cout << "╔══════════════════════════════════════════════════════════════╗\n";
-        cout << "║                     ENCRYPTION COMPLETE                      ║\n";
-        cout << "╚══════════════════════════════════════════════════════════════╝\n";
-        
-    } catch (const exception& e) {
-        cerr << "\n❌ Error: " << e.what() << endl;
-        return 1;
-    }
-    
     return 0;
 }
