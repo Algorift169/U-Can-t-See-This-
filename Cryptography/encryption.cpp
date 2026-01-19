@@ -17,13 +17,13 @@ const vector<vector<int>> KEY_MATRIX = {
 string encryptMessage(const string& message) {
     int blockSize = KEY_MATRIX.size();
     
-    // Pad and clean the message (preserve spaces)
-    string paddedMessage = MatrixUtils::padString(message, blockSize, true);
+    // Pad and clean the message
+    string paddedMessage = MatrixUtils::padString(message, blockSize);
     
-    // Convert to numerical vector (preserve spaces)
-    vector<int> messageVector = MatrixUtils::stringToVector(paddedMessage, true);
+    // Convert to numerical vector
+    vector<int> messageVector = MatrixUtils::stringToVector(paddedMessage);
     
-    // Encrypt only alphabetic characters, skip spaces (value 26)
+    // Encrypt block by block
     vector<int> encryptedVector;
     encryptedVector.reserve(messageVector.size());
     
@@ -34,26 +34,12 @@ string encryptMessage(const string& message) {
             block.push_back(messageVector[i + j]);
         }
         
-        // Check if block contains spaces
-        bool hasSpace = false;
-        for (int num : block) {
-            if (num == 26) {
-                hasSpace = true;
-                break;
-            }
-        }
+        // Encrypt the block
+        vector<int> encryptedBlock = MatrixUtils::multiplyMatrixVector(KEY_MATRIX, block, 26);
         
-        if (hasSpace) {
-            // If block contains spaces, don't encrypt (copy as-is)
-            encryptedVector.insert(encryptedVector.end(), block.begin(), block.end());
-        } else {
-            // Encrypt the block
-            vector<int> encryptedBlock = MatrixUtils::multiplyMatrixVector(KEY_MATRIX, block, 26);
-            
-            // Add to result
-            encryptedVector.insert(encryptedVector.end(), 
-                                  encryptedBlock.begin(), encryptedBlock.end());
-        }
+        // Add to result
+        encryptedVector.insert(encryptedVector.end(), 
+                              encryptedBlock.begin(), encryptedBlock.end());
     }
     
     // Convert back to string
@@ -63,7 +49,6 @@ string encryptMessage(const string& message) {
 int main() {
     cout << "=== Hill Cipher Encryption ===" << endl;
     cout << "Matrix Size: " << KEY_MATRIX.size() << "x" << KEY_MATRIX[0].size() << endl;
-    cout << "Note: Spaces are preserved but not encrypted" << endl;
     
     // Get input from user
     string inputMethod;
@@ -73,7 +58,7 @@ int main() {
     string message;
     
     if (inputMethod == "1") {
-        cout << "Enter message to encrypt (spaces allowed): ";
+        cout << "Enter message to encrypt: ";
         getline(cin, message);
     } else if (inputMethod == "2") {
         string filename;
@@ -85,10 +70,9 @@ int main() {
             cerr << "Error: Cannot open file " << filename << endl;
             return 1;
         }
-        // Read entire file (preserve spaces)
         getline(inputFile, message);
         inputFile.close();
-        cout << "Read message from file" << endl;
+        cout << "Read message from file: " << message << endl;
     } else {
         cerr << "Invalid choice!" << endl;
         return 1;
