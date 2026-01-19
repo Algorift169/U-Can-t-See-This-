@@ -7,13 +7,13 @@
 
 class MatrixUtils {
 public:
-    // Matrix multiplication modulo 26
+    // Matrix multiplication modulo 27 (now supports spaces)
     static std::vector<int> multiplyMatrixVector(const std::vector<std::vector<int>>& matrix, 
                                                  const std::vector<int>& vector, 
-                                                 int mod = 26);
+                                                 int mod = 27);  // Changed from 26 to 27
     
-    // Calculate modular inverse of a number modulo 26
-    static int modInverse(int a, int m = 26);
+    // Calculate modular inverse of a number modulo mod
+    static int modInverse(int a, int m = 27);  // Changed from 26 to 27
     
     // Calculate determinant of a matrix
     static int determinant(const std::vector<std::vector<int>>& matrix);
@@ -24,7 +24,7 @@ public:
     // Calculate modular inverse of a matrix
     static std::vector<std::vector<int>> inverseMatrix(const std::vector<std::vector<int>>& matrix);
     
-    // Convert string to vector of integers (A=0, B=1, ..., Z=25)
+    // Convert string to vector of integers (A=0, B=1, ..., Z=25, Space=26)
     static std::vector<int> stringToVector(const std::string& str);
     
     // Convert vector of integers to string
