@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <iomanip>
 
 using namespace std;
 using namespace chrono;
@@ -13,57 +14,134 @@ const vector<vector<int>> KEY_MATRIX = {
     {20, 17, 15}
 };
 
-// Decrypt message using Hill cipher
+// Function to print decorative header
+void printHeader(const string& title) {
+    cout << "\n";
+    cout << "╔══════════════════════════════════════════════════════════════╗\n";
+    cout << "║                                                              ║\n";
+    cout << "║                " << setw(40) << left << title << "                ║\n";
+    cout << "║                                                              ║\n";
+    cout << "╚══════════════════════════════════════════════════════════════╝\n";
+}
+
+// Function to print section separator
+void printSeparator() {
+    cout << "\n┌──────────────────────────────────────────────────────────────┐\n";
+}
+
+// Function to print boxed text
+void printBox(const string& label, const string& content) {
+    cout << "│ " << setw(15) << left << label << ": " << setw(47) << left << content << "│\n";
+}
+
+// Function to print footer
+void printFooter() {
+    cout << "\n└──────────────────────────────────────────────────────────────┘\n";
+}
+
+// Decrypt message using Hill cipher with space preservation
 string decryptMessage(const string& encryptedMessage) {
     int blockSize = KEY_MATRIX.size();
     
     // Calculate inverse matrix
     static vector<vector<int>> inverseKey = MatrixUtils::inverseMatrix(KEY_MATRIX);
     
-    // Convert encrypted message to numerical vector
-    vector<int> encryptedVector = MatrixUtils::stringToVector(encryptedMessage);
+    // Process the encrypted message
+    string decrypted;
+    int charIndex = 0;
     
-    // Decrypt block by block
-    vector<int> decryptedVector;
-    decryptedVector.reserve(encryptedVector.size());
-    
-    for (size_t i = 0; i < encryptedVector.size(); i += blockSize) {
-        // Extract block
-        vector<int> block;
-        for (int j = 0; j < blockSize; j++) {
-            block.push_back(encryptedVector[i + j]);
+    while (charIndex < encryptedMessage.length()) {
+        if (encryptedMessage[charIndex] == ' ') {
+            // Preserve spaces
+            decrypted += ' ';
+            charIndex++;
+        } else {
+            // Extract block of letters
+            vector<int> block;
+            for (int j = 0; j < blockSize && charIndex < encryptedMessage.length(); j++) {
+                // Skip spaces in encrypted text
+                while (charIndex < encryptedMessage.length() && encryptedMessage[charIndex] == ' ') {
+                    decrypted += ' ';
+                    charIndex++;
+                }
+                
+                if (charIndex < encryptedMessage.length()) {
+                    block.push_back(toupper(encryptedMessage[charIndex]) - 'A');
+                    charIndex++;
+                }
+            }
+            
+            // If we have a complete block, decrypt it
+            if (block.size() == blockSize) {
+                vector<int> decryptedBlock = MatrixUtils::multiplyMatrixVector(inverseKey, block, 26);
+                
+                for (int num : decryptedBlock) {
+                    decrypted += static_cast<char>('A' + ((num % 26 + 26) % 26));
+                }
+            }
         }
-        
-        // Decrypt the block using inverse matrix
-        vector<int> decryptedBlock = MatrixUtils::multiplyMatrixVector(inverseKey, block, 26);
-        
-        // Add to result
-        decryptedVector.insert(decryptedVector.end(), 
-                              decryptedBlock.begin(), decryptedBlock.end());
     }
     
-    // Convert back to string and remove padding
-    string decrypted = MatrixUtils::vectorToString(decryptedVector);
-    return MatrixUtils::removePadding(decrypted);
+    // Remove padding
+    string result = MatrixUtils::removePadding(decrypted);
+    
+    // Convert to proper case (first letter uppercase, rest lowercase)
+    bool newWord = true;
+    for (char& c : result) {
+        if (c == ' ') {
+            newWord = true;
+        } else if (newWord) {
+            c = toupper(c);
+            newWord = false;
+        } else {
+            c = tolower(c);
+        }
+    }
+    
+    return result;
 }
 
 int main() {
-    cout << "=== Hill Cipher Decryption ===" << endl;
-    cout << "Matrix Size: " << KEY_MATRIX.size() << "x" << KEY_MATRIX[0].size() << endl;
+    // Enhanced UI with design
+    printHeader("HILL CIPHER DECRYPTION");
+    
+    cout << "\n";
+    cout << "┌──────────────────────────────────────────────────────────────┐\n";
+    cout << "│                     CONFIGURATION                            │\n";
+    cout << "├──────────────────────────────────────────────────────────────┤\n";
+    cout << "│  Matrix Size: " << setw(48) << left << "3x3" << "│\n";
+    cout << "│  Space Preservation: " << setw(40) << left << "Enabled" << "│\n";
+    cout << "└──────────────────────────────────────────────────────────────┘\n";
     
     // Get input from user
     string inputMethod;
-    cout << "\nEnter '1' to type encrypted message or '2' to read from file: ";
+    cout << "\n\n";
+    cout << "╭──────────────────────────────────────────────────────────────╮\n";
+    cout << "│                     INPUT METHOD                             │\n";
+    cout << "├──────────────────────────────────────────────────────────────┤\n";
+    cout << "│  1. Type encrypted message                                   │\n";
+    cout << "│  2. Read from file                                           │\n";
+    cout << "╰──────────────────────────────────────────────────────────────╯\n";
+    cout << "\nEnter your choice (1 or 2): ";
     getline(cin, inputMethod);
     
     string encryptedMessage;
     
     if (inputMethod == "1") {
-        cout << "Enter encrypted message: ";
+        cout << "\n";
+        cout << "╭──────────────────────────────────────────────────────────────╮\n";
+        cout << "│                     ENTER ENCRYPTED TEXT                     │\n";
+        cout << "╰──────────────────────────────────────────────────────────────╯\n";
+        cout << "> ";
         getline(cin, encryptedMessage);
+        cout << "\n✓ Encrypted text received\n";
     } else if (inputMethod == "2") {
         string filename;
-        cout << "Enter filename (default: encrypted.txt): ";
+        cout << "\n";
+        cout << "╭──────────────────────────────────────────────────────────────╮\n";
+        cout << "│                     FILE SELECTION                           │\n";
+        cout << "╰──────────────────────────────────────────────────────────────╯\n";
+        cout << "Enter filename (press Enter for 'encrypted.txt'): ";
         getline(cin, filename);
         
         if (filename.empty()) {
@@ -72,14 +150,14 @@ int main() {
         
         ifstream inputFile(filename);
         if (!inputFile) {
-            cerr << "Error: Cannot open file " << filename << endl;
+            cerr << "\n❌ Error: Cannot open file " << filename << endl;
             return 1;
         }
         getline(inputFile, encryptedMessage);
         inputFile.close();
-        cout << "Read encrypted message from file" << endl;
+        cout << "✓ Encrypted text loaded from file\n";
     } else {
-        cerr << "Invalid choice!" << endl;
+        cerr << "\n❌ Invalid choice!" << endl;
         return 1;
     }
     
@@ -94,24 +172,45 @@ int main() {
         auto endTime = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(endTime - startTime);
         
-        // Display results
-        cout << "\n--- Results ---" << endl;
-        cout << "Encrypted Message: " << encryptedMessage << endl;
-        cout << "Decrypted Message: " << decrypted << endl;
-        cout << "Decryption Time: " << duration.count() << " microseconds" << endl;
+        // Display results with enhanced design
+        printHeader("DECRYPTION RESULTS");
+        
+        printSeparator();
+        printBox("Encrypted Text", encryptedMessage);
+        printBox("Decrypted Message", decrypted);
+        printBox("Processing Time", to_string(duration.count()) + " microseconds");
+        
+        // Inverse matrix display
+        cout << "│\n";
+        cout << "│ Inverse Matrix (mod 26):                                   │\n";
+        try {
+            vector<vector<int>> inverseKey = MatrixUtils::inverseMatrix(KEY_MATRIX);
+            cout << "│   [" << setw(2) << inverseKey[0][0] << ", " << setw(2) << inverseKey[0][1] << ", " << setw(2) << inverseKey[0][2] << "]                                       │\n";
+            cout << "│   [" << setw(2) << inverseKey[1][0] << ", " << setw(2) << inverseKey[1][1] << ", " << setw(2) << inverseKey[1][2] << "]                                       │\n";
+            cout << "│   [" << setw(2) << inverseKey[2][0] << ", " << setw(2) << inverseKey[2][1] << ", " << setw(2) << inverseKey[2][2] << "]                                       │\n";
+        } catch (...) {
+            cout << "│   Could not calculate inverse matrix                       │\n";
+        }
+        
+        printFooter();
         
         // Save to file
         ofstream outputFile("decrypted.txt");
         if (outputFile) {
             outputFile << decrypted;
             outputFile.close();
-            cout << "Decrypted message saved to 'decrypted.txt'" << endl;
+            cout << "\n✅ Decrypted message saved to 'decrypted.txt'\n";
         } else {
-            cerr << "Warning: Could not save to file" << endl;
+            cerr << "\n⚠️  Warning: Could not save to file\n";
         }
         
+        cout << "\n";
+        cout << "╔══════════════════════════════════════════════════════════════╗\n";
+        cout << "║                     DECRYPTION COMPLETE                      ║\n";
+        cout << "╚══════════════════════════════════════════════════════════════╝\n";
+        
     } catch (const exception& e) {
-        cerr << "Error: " << e.what() << endl;
+        cerr << "\n❌ Error: " << e.what() << endl;
         return 1;
     }
     
