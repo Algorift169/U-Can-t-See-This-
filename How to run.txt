@@ -26,3 +26,51 @@ powershell
 .\build\decryption.exe
 The two programs should now be running and communicating (likely via IPC, sockets, or shared memory).
 
+
+How to Run on Linux (Kali)
+1. Open the project in VS Code
+
+Open VS Code → File → Open Folder → select your project folder.
+
+2. Open a terminal in VS Code
+
+Press Ctrl + ` (backtick) to open an integrated terminal.
+
+Make sure you are in the project directory.
+
+3. Compile the programs
+
+On Linux, executables don’t need .exe, and paths use / instead of \.
+
+# Create the build folder if it doesn't exist
+mkdir -p build
+
+# Compile encryption
+g++ Cryptography/encryption.cpp Cryptography/matrix_utils.cpp -o build/encryption -std=c++11
+
+# Compile decryption
+g++ Cryptography/decryption.cpp Cryptography/matrix_utils.cpp -o build/decryption -std=c++11
+
+
+✅ After this, you should have two executables in build/:
+
+build/encryption
+
+build/decryption
+
+4. Run the programs
+
+Open two separate terminals in VS Code.
+
+Terminal 1:
+
+./build/encryption
+
+
+Terminal 2:
+
+./build/decryption
+
+
+The programs will now run and communicate (via IPC, sockets, or shared memory) just like in Windows.
+
